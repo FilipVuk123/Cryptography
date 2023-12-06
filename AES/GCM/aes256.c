@@ -20,6 +20,9 @@ int encryptAES256gcm(char *bufferToEncrypt, int bufferSize, char *aad, int aadSi
     EVP_EncryptFinal(ctx, encryptedBuffer + outLen2, &outLen3);
 
     EVP_CIPHER_CTX_free(ctx);
+
+    encryptedBuffer[outLen1 + outLen2 + outLen3] = '\0';
+
     return outLen1 + outLen2 + outLen3;
 }
 
@@ -39,6 +42,9 @@ int decryptAES256gcm(char *bufferToDecrypt, int bufferSize, char *aad, int aadSi
     EVP_DecryptFinal(ctx, decryptedBuffer + outLen2, &outLen3);
 
     EVP_CIPHER_CTX_free(ctx);
+
+    decryptedBuffer[outLen1 + outLen2 + outLen3] = '\0';
+
     return outLen1 + outLen2 + outLen3;
 }
 
@@ -68,8 +74,6 @@ int main()
     printf("\n");
 
     decryptAES256gcm(encryptedData, messageLen, aad, aadSize, decryptedData, ckey, ivec);
-
-    decryptedData[messageLen] = '\0';
 
     printf("%s\n", decryptedData);
 

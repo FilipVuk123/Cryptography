@@ -16,6 +16,8 @@ int encrypt3DesCfb(char *input, int input_size, char *key, char *iv, char *outpu
         EVP_EncryptFinal(ctx, output + ciphertext_total, &outl);
         ciphertext_total += outl;
 
+        output[ciphertext_total] = '\0';
+
         return ciphertext_total;
 }
 
@@ -31,6 +33,8 @@ int decrypt3DesCfb(char *input, int input_size, char *key, char *iv, char *outpu
 
         EVP_DecryptFinal(ctx, output + decrypted_total, &outl);
         decrypted_total += outl;
+
+        output[decrypted_total] = '\0';
 
         return decrypted_total;
 }

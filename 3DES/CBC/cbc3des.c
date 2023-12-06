@@ -5,7 +5,7 @@
 
 int encrypt3DesCbc(char *input, int input_size, char *key, char *iv, char *output)
 {
-        int outl = 0; 
+        int outl = 0;
         int ciphertext_total = 0;
         EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
         EVP_EncryptInit(ctx, EVP_des_ede3_cbc(), key, iv);
@@ -15,6 +15,8 @@ int encrypt3DesCbc(char *input, int input_size, char *key, char *iv, char *outpu
 
         EVP_EncryptFinal(ctx, output + ciphertext_total, &outl);
         ciphertext_total += outl;
+
+        output[ciphertext_total] = '\0';
 
         return ciphertext_total;
 }
@@ -32,6 +34,8 @@ int decrypt3DesCbc(char *input, int input_size, char *key, char *iv, char *outpu
         EVP_DecryptFinal(ctx, output + decrypted_total, &outl);
         decrypted_total += outl;
 
+        output[decrypted_total] = '\0';
+
         return decrypted_total;
 }
 
@@ -46,11 +50,10 @@ int main(int argc, char *argv[])
         int messageLen = strlen(message);
         char ciphertext[messageLen + 8];
         char decrypted[messageLen];
-        
 
         printf("Key = %s\n", key);
 
-        printf("Iv = %s\n", iv); 
+        printf("Iv = %s\n", iv);
 
         printf("Message = %s\n", message);
 
@@ -68,8 +71,6 @@ int main(int argc, char *argv[])
         }
 
         decrypt3DesCbc(ciphertext, ciphertext_total, key, iv, decrypted);
-
-        decrypted[messageLen] = '\0';
 
         printf("Decrypted total %d\n", ciphertext_total);
 

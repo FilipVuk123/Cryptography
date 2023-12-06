@@ -16,6 +16,8 @@ int encryptAES256ctr(char *bufferToEncrypt, int bufferSize, char *encryptedBuffe
     EVP_EncryptUpdate(ctx, encryptedBuffer, &outLen1, bufferToEncrypt, bufferSize);
     EVP_EncryptFinal(ctx, encryptedBuffer + outLen1, &outLen2);
     EVP_CIPHER_CTX_free(ctx);
+    
+    encryptedBuffer[outLen1 + outLen2] = '\0';
 
     return outLen1 + outLen2;
 }
@@ -32,6 +34,9 @@ int decryptAES256ctr(char *bufferToDecrypt, int bufferSize, char *decryptedBuffe
     EVP_DecryptUpdate(ctx, decryptedBuffer, &outLen1, bufferToDecrypt, bufferSize);
     EVP_DecryptFinal(ctx, decryptedBuffer + outLen1, &outLen2);
     EVP_CIPHER_CTX_free(ctx);
+
+    decryptedBuffer[outLen1 + outLen2] = '\0';
+
     return outLen1 + outLen2;
 }
 
@@ -58,8 +63,6 @@ int main()
     printf("\n");
 
     decryptAES256ctr(encryptedData, messageLen, decryptedData, ckey, nonce);
-
-    decryptedData[messageLen] = '\0';
 
     printf("%s\n", decryptedData);
 
