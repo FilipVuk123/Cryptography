@@ -37,7 +37,7 @@ int main() {
 
     // Create UDP socket
     if ((socket_fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        perror("Socket creation failed");
+        printf("Socket creation failed\n");
         exit(EXIT_FAILURE);
     }
 
@@ -49,7 +49,7 @@ int main() {
 
     // Bind the socket
     if (bind(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Bind failed");
+        printf("Bind failed\n");
         close(socket_fd);
         exit(EXIT_FAILURE);
     }
@@ -72,11 +72,11 @@ int main() {
             }
         } else {
 
-            printf("Encrypted message: \n");
+            printf("Encrypted message: \n\n");
             for (int i = 0; i < bytes_received; i++){
                 printf("%#x ", buffer[i]);
             }
-            printf("\n");
+            printf("\n\n");
 
             // Decrypt the received message using XOR
             XORCipher(buffer, key, bytes_received, strlen(key));
@@ -85,7 +85,7 @@ int main() {
             printf("Decrypted message: %s\n", buffer);
             memset(buffer, 0, BUFFER_SIZE);
 
-            printf("\n\n");
+            printf("\n\n\n");
         }
     }
 

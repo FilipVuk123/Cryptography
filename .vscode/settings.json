@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "pem.h": "c"
+        "pem.h": "c",
+        "sha.h": "c"
     }
 }

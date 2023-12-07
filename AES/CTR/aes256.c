@@ -10,20 +10,20 @@ int encryptAES256ctr(char *inbuf, int inlen, char *key, char *nonce, char *outbu
     int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
     if (!(ctx = EVP_CIPHER_CTX_new())){
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
     if (1 != EVP_EncryptInit(ctx, EVP_aes_256_ctr(), key, nonce)){
-        perror("EVP_EncryptInit EVP_aes_256_ctr");
+        printf("Error: EVP_EncryptInit EVP_aes_256_ctr\n");
         to_ret =+ 1;
     }
     if (1 != EVP_EncryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
-        perror("EVP_EncryptUpdate");
+        printf("Error: EVP_EncryptUpdate\n");
         to_ret =+ 1;
     }
     total += len;
     if (1 != EVP_EncryptFinal(ctx, outbuf + total, &len)){
-        perror("EVP_EncryptFinal");
+        printf("Error: EVP_EncryptFinal\n");
         to_ret =+ 1;
     }
     total += len;
@@ -42,20 +42,20 @@ int decryptAES256ctr(char *inbuf, int inlen, char *key, char *nonce, char *outbu
     int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
     if (!(ctx = EVP_CIPHER_CTX_new())){
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
     if (1 != EVP_DecryptInit(ctx, EVP_aes_256_ctr(), key, nonce)){
-        perror("EVP_DecryptInit EVP_aes_256_ctr");
+        printf("Error: EVP_DecryptInit EVP_aes_256_ctr\n");
         to_ret += 1;
     }
     if (1 != EVP_DecryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
-        perror("EVP_DecryptUpdate");
+        printf("Error: EVP_DecryptUpdate\n");
         to_ret += 1;
     }
     total += len;
     if (1 != EVP_DecryptFinal(ctx, outbuf + total, &len)){
-        perror("EVP_DecryptFinal");
+        printf("Error: EVP_DecryptFinal\n");
         to_ret += 1;
     }
     total += len;
@@ -86,7 +86,7 @@ int main()
 
     int ret = encryptAES256ctr(message, messageLen, ckey, nonce, encryptedData, &size);
     if (ret > 0) 
-        perror("encryptAES256ctr");
+        printf("encryptAES256ctr\n");
 
     printf("%d\n", size);
 
@@ -95,11 +95,11 @@ int main()
         printf("%#x", encryptedData[i]);
     }
 
-    printf("\n");
+    printf("\n\n");
 
     ret = decryptAES256ctr(encryptedData, messageLen, ckey, nonce, decryptedData, &size);
     if (ret > 0) 
-        perror("decryptAES256ctr");
+        printf("decryptAES256ctr\n");
 
     printf("%s\n", decryptedData);
 

@@ -10,30 +10,31 @@ int encryptAES256gcm(char *inbuf, int inlen, char* aad, int addlen, char *key, c
     int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
     if (!( ctx = EVP_CIPHER_CTX_new())){
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
 
     if ( 1 != EVP_EncryptInit(ctx, EVP_aes_256_gcm(), key, iv)){
-        perror("EVP_EncryptInit EVP_aes_256_gcm");
+        printf("Error: EVP_EncryptInit EVP_aes_256_gcm\n");
         to_ret += 1;
     }
+
     if ( 1 != EVP_EncryptUpdate(ctx, NULL, &len, aad, addlen)){
-        perror("EVP_EncryptUpdate aad");
+        printf("Error: EVP_EncryptUpdate aad\n");
         to_ret += 1;
     }
     if ( 1 != EVP_EncryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
-        perror("EVP_EncryptUpdate");
+        printf("Error: EVP_EncryptUpdate\n");
         to_ret += 1;
     }
     total+=len;
     if ( 1 != EVP_EncryptFinal(ctx, outbuf + total, &len)){
-        perror("EVP_EncryptFinal");
+        printf("Error: EVP_EncryptFinal\n");
         to_ret += 1;
     }
     total+=len;
     if (1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, outtag)){
-        perror("EVP_CIPHER_CTX_ctrl");
+        printf("Error: EVP_CIPHER_CTX_ctrl\n");
         to_ret += 1;
     }
     EVP_CIPHER_CTX_free(ctx);
@@ -51,29 +52,29 @@ int decryptAES256gcm(char *inbuf, int inlen, char* aad, int addlen, char *key, c
     int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
     if (!(ctx = EVP_CIPHER_CTX_new())){
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
 
     if( 1 != EVP_DecryptInit(ctx, EVP_aes_256_gcm(), key, iv)){
-        perror("EVP_DecryptInit EVP_aes_256_gcm");
+        printf("Error: EVP_DecryptInit EVP_aes_256_gcm\n");
         to_ret += 1;
     }
     if( 1 != EVP_DecryptUpdate(ctx, NULL, &len, aad, addlen)){
-        perror("EVP_DecryptUpdate aad");
+        printf("Error: EVP_DecryptUpdate aad\n");
         to_ret += 1;
     }
     if( 1 != EVP_DecryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
-        perror("EVP_DecryptUpdate");
+        printf("Error: EVP_DecryptUpdate\n");
         to_ret += 1;
     }
     total += len;
     if( 1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, intag)){
-        perror("EVP_CIPHER_CTX_ctrl tag");
+        printf("Error: EVP_CIPHER_CTX_ctrl tag\n");
         to_ret += 1;
     }
     if( 1 != EVP_DecryptFinal(ctx, outbuf + total, &len)){
-        perror("EVP_DecryptFinal");
+        printf("Error: EVP_DecryptFinal\n");
         to_ret += 1;
     }
     total += len;
@@ -108,37 +109,37 @@ int main()
 
     int ret = encryptAES256gcm(message, messageLen, aad, aadSize, ckey, ivec, encryptedData, &size, tag);
     if(ret > 0)
-        perror("encryptAES256gcm");
+        printf("encryptAES256gcm\n");
 
-    printf("Encrypted data: \t");
+    printf("Encrypted data: \n");
     for (int i = 0; i < size; i++)
     {
         printf("%#x", encryptedData[i]);
     }
 
 
-    printf("\n");
-    printf("Tag: \t");
+    printf("\n\n");
+    printf("Tag: \n");
     for (int i = 0; i < 16; i++)
     {
         printf("%#x", tag[i]);
     }
 
-    printf("\n");
+    printf("\n\n");
     ret = decryptAES256gcm(encryptedData, messageLen, aad, aadSize, ckey, ivec, decryptedData, &size, tag);
     if(ret > 0)
-        perror("decryptAES256gcm");
+        printf("decryptAES256gcm\n");
 
     printf("%s\n", decryptedData);
 
 
-    printf("Tag: \t");
+    printf("Tag: \n");
     for (int i = 0; i < 16; i++)
     {
         printf("%#x", tag[i]);
     }
 
-    printf("\n");
+    printf("\n\n");
 
     return 0;
 }

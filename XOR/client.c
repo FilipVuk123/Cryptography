@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     // Create UDP socket
     if ((socket_fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        perror("Socket creation failed");
+        printf("Socket creation failed\n");
         exit(EXIT_FAILURE);
     }
 

@@ -12,26 +12,26 @@ int encrypt3DesCfb(char *inbuf, int inlen, char *key, char *iv, char *outbuf, in
     EVP_CIPHER_CTX *ctx;
     if (!(ctx = EVP_CIPHER_CTX_new()))
     {
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
 
     if (1 != EVP_EncryptInit(ctx, EVP_des_ede3_cfb(), key, iv))
     {
-        perror("EVP_EncryptInit EVP_des_ede3_cfb");
+        printf("Error: EVP_EncryptInit EVP_des_ede3_cfb\n");
         to_ret += 1;
     }
 
     if (1 != EVP_EncryptUpdate(ctx, outbuf, &outl, inbuf, inlen))
     {
-        perror("EVP_EncryptUpdate");
+        printf("Error: EVP_EncryptUpdate\n");
         to_ret += 1;
     }
     ciphertext_total += outl;
 
     if (1 != EVP_EncryptFinal(ctx, outbuf + ciphertext_total, &outl))
     {
-        perror("EVP_EncryptFinal");
+        printf("Error: EVP_EncryptFinal\n");
         to_ret += 1;
     }
     ciphertext_total += outl;
@@ -52,25 +52,25 @@ int decrypt3DesCfb(char *inbuf, int inlen, char *key, char *iv, char *outbuf, in
     EVP_CIPHER_CTX *ctx;
     if (!(ctx = EVP_CIPHER_CTX_new()))
     {
-        perror("EVP_CIPHER_CTX_new");
+        printf("Error: EVP_CIPHER_CTX_new\n");
         return 1;
     }
     if (1 != EVP_DecryptInit(ctx, EVP_des_ede3_cfb(), key, iv))
     {
-        perror("EVP_DecryptInit EVP_des_ede3_cfb");
+        printf("Error: EVP_DecryptInit EVP_des_ede3_cfb\n");
         to_ret += 1;
     }
 
     if (1 != EVP_DecryptUpdate(ctx, outbuf, &outl, inbuf, inlen))
     {
-        perror("EVP_DecryptUpdate");
+        printf("Error: EVP_DecryptUpdate\n");
         to_ret += 1;
     }
     decrypted_total += outl;
 
     if (1 != EVP_DecryptFinal(ctx, outbuf + decrypted_total, &outl))
     {
-        perror("EVP_DecryptFinal");
+        printf("Error: EVP_DecryptFinal\n");
         to_ret += 1;
     }
     decrypted_total += outl;
@@ -103,27 +103,27 @@ int main(int argc, char *argv[])
     int ciphertext_total, decrypted_total;
     int ret = encrypt3DesCfb(message, messageLen, key, iv, ciphertext, &ciphertext_total);
     if (ret > 0)
-        perror("encrypt3DesCfb");
+        printf("encrypt3DesCfb\n");
 
     printf("Cipher total %d\n", ciphertext_total);
-    printf("Ciphertext:          ");
+    printf("Ciphertext:          \n");
     {
         int i;
         for (i = 0; i < ciphertext_total; i++)
         {
             printf("%#x ", ciphertext[i]);
         }
-        printf("\n");
+        printf("\n\n");
     }
 
     ret = decrypt3DesCfb(ciphertext, ciphertext_total, key, iv, decrypted, &decrypted_total);
     if (ret > 0)
-        perror("decrypt3DesCfb");
+        printf("decrypt3DesCfb\n");
 
     decrypted[messageLen] = '\0';
 
     printf("Decrypted total %d\n", ciphertext_total);
 
-    printf("Decrypted:           ");
+    printf("Decrypted:           \n");
     printf("%s\n", decrypted);
 }
