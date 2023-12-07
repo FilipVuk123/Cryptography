@@ -4,39 +4,74 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 
-int encryptAES256cbc(char *bufferToEncrypt, int bufferSize, char *encryptedBuffer, char *key, char *iv)
+int encryptAES256cbc(char *inbuf, int inlen, char *key, char *iv, char *outbuf, int *outlen)
 {
-    int outLen1 = 0;
-    int outLen2 = 0;
-
-    // Set up encryption
+    int len, total = 0;
+    int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
-    ctx = EVP_CIPHER_CTX_new();
-    EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv);
-    EVP_EncryptUpdate(ctx, encryptedBuffer, &outLen1, bufferToEncrypt, bufferSize);
-    EVP_EncryptFinal(ctx, encryptedBuffer + outLen1, &outLen2);
-    EVP_CIPHER_CTX_free(ctx);
-    encryptedBuffer[outLen1 + outLen2] = '\0';
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        perror("EVP_CIPHER_CTX_new");
+        return 1;
+    }
+    if (1 != EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv)){
+        perror("EVP_EncryptInit EVP_aes_256_cbc");
+        to_ret += 1;
+    }
+    if (1 != EVP_EncryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
+        perror("EVP_EncryptUpdate");
+        to_ret += 1;
+    }
 
-    return outLen1 + outLen2;
+    total += len;
+
+    if (1 != EVP_EncryptFinal(ctx, outbuf + total, &len)){
+        perror("EVP_EncryptFinal");
+        to_ret += 1;
+    }
+
+    total += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    outbuf[total] = '\0';
+
+    *outlen = total;
+
+    return to_ret;
 }
 
-int decryptAES256cbc(char *bufferToDecrypt, int bufferSize, char *decryptedBuffer, char *key, char *iv)
+int decryptAES256cbc(char *inbuf, int inlen, char *key, char *iv, char *outbuf, int *outlen)
 {
-    int outLen1 = 0;
-    int outLen2 = 0;
-
-    // setup decryption
+    int len, total = 0;
+    int to_ret = 0;
     EVP_CIPHER_CTX *ctx;
-    ctx = EVP_CIPHER_CTX_new();
-    EVP_DecryptInit(ctx, EVP_aes_256_cbc(), key, iv);
-    EVP_DecryptUpdate(ctx, decryptedBuffer, &outLen1, bufferToDecrypt, bufferSize);
-    EVP_DecryptFinal(ctx, decryptedBuffer + outLen1, &outLen2);
+    if(!(ctx = EVP_CIPHER_CTX_new())){
+        perror("EVP_CIPHER_CTX_new");
+        return 1;
+    }
+    if (1 != EVP_DecryptInit(ctx, EVP_aes_256_cbc(), key, iv)){
+        perror("EVP_DecryptInit EVP_aes_256_cbc");
+        to_ret += 1;
+    }
+    if (1 != EVP_DecryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
+        perror("EVP_DecryptUpdate");
+        to_ret += 1;
+    }
+
+    total += len;
+
+    if (1 != EVP_DecryptFinal(ctx, outbuf + total, &len)){
+        perror("EVP_DecryptFinal");
+        to_ret += 1;
+    }
+
+    total += len;
+
     EVP_CIPHER_CTX_free(ctx);
+    outbuf[total] = '\0';
 
-    decryptedBuffer[outLen1 + outLen2] = '\0';
+    *outlen = total;
 
-    return outLen1 + outLen2;
+    return to_ret;
 }
 
 int main()
@@ -49,19 +84,25 @@ int main()
     int messageLen = strlen(message);
     printf("%d\n", messageLen);
 
-    char encryptedData[messageLen + AES_BLOCK_SIZE - (messageLen % AES_BLOCK_SIZE)];
+    char encryptedData[messageLen + AES_BLOCK_SIZE];
     char decryptedData[messageLen];
 
-    encryptAES256cbc(message, messageLen, encryptedData, ckey, ivec);
+    int size;
 
-    for (int i = 0; i < sizeof(encryptedData); i++)
+    int ret = encryptAES256cbc(message, messageLen, ckey, ivec, encryptedData, &size);
+    if(ret > 0)
+        perror("encryptAES256cbc");
+
+    for (int i = 0; i < size; i++)
     {
-        printf("%02x", encryptedData[i]);
+        printf("%#x", encryptedData[i]);
     }
 
     printf("\n");
 
-    decryptAES256cbc(encryptedData, messageLen + AES_BLOCK_SIZE - (messageLen % AES_BLOCK_SIZE), decryptedData, ckey, ivec);
+    decryptAES256cbc(encryptedData, size, ckey, ivec, decryptedData, &size);
+    if(ret > 0)
+        perror("decryptAES256cbc");
 
     printf("%s\n", decryptedData);
 

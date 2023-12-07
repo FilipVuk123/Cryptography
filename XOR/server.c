@@ -24,7 +24,9 @@ char* XORCipher(char* data, char* key, int dataLen, int keyLen) {
 	for (int i = 0; i < dataLen; ++i) {
 		data[i] = data[i] ^ key[i % keyLen];
 	}
+    data[dataLen] = '\0';
 }
+
 int main() {
     struct sockaddr_in server_addr, client_addr;
     int socket_fd, bytes_received;
@@ -63,7 +65,6 @@ int main() {
     while (!exit_flag) {
         // Receive data from the client
         bytes_received = recvfrom(socket_fd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, &addr_len);
-
         if (bytes_received < 0) {
             
             if (errno == EAGAIN && errno == EWOULDBLOCK) {
@@ -72,13 +73,13 @@ int main() {
         } else {
 
             printf("Encrypted message: \n");
-            for (int i = 0; i < messageLen; i++){
+            for (int i = 0; i < bytes_received; i++){
                 printf("%#x ", buffer[i]);
             }
             printf("\n");
 
             // Decrypt the received message using XOR
-            XORCipher(buffer, key, messageLen, strlen(key));
+            XORCipher(buffer, key, bytes_received, strlen(key));
 
             // Display the decrypted message
             printf("Decrypted message: %s\n", buffer);

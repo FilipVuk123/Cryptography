@@ -15,7 +15,9 @@ void generateKeys(const char *publicKeyFilename, const char *privateKeyFilename,
     FILE *fp = fopen(publicKeyFilename, "w");
     if (fp != NULL)
     {
-        PEM_write_PUBKEY(fp, pkey);
+        if(PEM_write_PUBKEY(fp, pkey) == 0){
+            perror("PEM_write_PUBKEY");
+        }
         fclose(fp);
     }
     else
@@ -25,7 +27,9 @@ void generateKeys(const char *publicKeyFilename, const char *privateKeyFilename,
     fp = fopen(privateKeyFilename, "w");
     if (fp != NULL)
     {
-        PEM_write_PrivateKey(fp, pkey, NULL, NULL, 0, NULL, NULL);
+        if (PEM_write_PrivateKey(fp, pkey, NULL, NULL, 0, NULL, NULL) == 0){
+            perror("PEM_write_PrivateKey");
+        }
         fclose(fp);
     }
     else
@@ -35,13 +39,14 @@ void generateKeys(const char *publicKeyFilename, const char *privateKeyFilename,
     EVP_PKEY_free(pkey);
 }
 
-int encryptRSA(char *input, int input_size, char *output, const char* pathToPublicKey)
+int encryptRSA(char* inbuf, int inlen, char* outbuf, int* outlen, const char* pathToPublicKey)
 {
+    int to_ret = 0;
     FILE *fp = fopen(pathToPublicKey, "r");
     if (fp == NULL)
     {
         perror("file error");
-        return -1;
+        return 1;
     }
     EVP_PKEY *pkey;
     pkey = PEM_read_PUBKEY(fp, NULL, NULL, NULL);
@@ -50,36 +55,55 @@ int encryptRSA(char *input, int input_size, char *output, const char* pathToPubl
     if (pkey == NULL)
     {
         perror("PEM_read_PUBKEY");
-        return -1;
+        return 1;
     }
 
-    size_t outlen;
+    size_t outlength;
     size_t outl;
 
-    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
-    EVP_PKEY_encrypt_init(ctx);
-    EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING);
-    EVP_PKEY_encrypt(ctx, NULL, &outlen, input, input_size);
-
-    if (!EVP_PKEY_encrypt(ctx, output, &outl, input, (size_t)input_size))
-    {
-        perror("EVP_PKEY_encrypt");
+    EVP_PKEY_CTX *ctx;
+    if (!(ctx = EVP_PKEY_CTX_new(pkey, NULL))){
+        perror("EVP_PKEY_CTX_new");
+        EVP_PKEY_free(pkey);
+        return 1;
     }
     EVP_PKEY_free(pkey);
+
+    if (1 != EVP_PKEY_encrypt_init(ctx)){
+        perror("EVP_PKEY_encrypt_init");
+        to_ret += 1;
+    }
+    if (1 != EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING)){
+        perror("EVP_PKEY_CTX_set_rsa_padding");
+        to_ret += 1;
+    }
+    if (1 != EVP_PKEY_encrypt(ctx, NULL, &outlength, inbuf, inlen)){
+        perror("EVP_PKEY_encrypt");
+        to_ret += 1;
+    }
+
+    if (1 != EVP_PKEY_encrypt(ctx, outbuf, &outl, inbuf, (size_t)inlen))
+    {
+        perror("EVP_PKEY_encrypt");
+        to_ret += 1;
+    }
     EVP_PKEY_CTX_free(ctx);
 
-    output[outl] = '\0';
+    *outlen = outl;
 
-    return outl;
+    outbuf[outl] = '\0';
+
+    return to_ret;
 }
 
-int decryptRSA(char *input, int input_size, char *output, const char* pathToPrivateKey)
+int decryptRSA(char* inbuf, int inlen, char* outbuf, int* outlen, const char* pathToPrivateKey)
 {
+    int to_ret = 0;
     FILE *fp = fopen(pathToPrivateKey, "r");
     if (fp == NULL)
     {
         perror("file error");
-        return -1;
+        return 1;
     }
     EVP_PKEY *pkey = PEM_read_PrivateKey(fp, NULL, NULL, NULL);
     fclose(fp);
@@ -87,27 +111,47 @@ int decryptRSA(char *input, int input_size, char *output, const char* pathToPriv
     if (pkey == NULL)
     {
         perror("PEM_read_PrivateKey");
-        return -1;
+        return 1;
     }
     
-    size_t outlen;
+    size_t outlength;
     size_t outl;
 
-    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
-    EVP_PKEY_decrypt_init(ctx);
-    EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING);
-    EVP_PKEY_decrypt(ctx, NULL, &outlen, input, input_size);
-
-    if (!EVP_PKEY_decrypt(ctx, output, &outl, input, input_size))
-    {
-        perror("EVP_PKEY_decrypt");
+    EVP_PKEY_CTX *ctx;
+    if(!(ctx = EVP_PKEY_CTX_new(pkey, NULL))){
+        perror("EVP_PKEY_CTX_new");
+        EVP_PKEY_free(pkey);
+        return 1;
     }
     EVP_PKEY_free(pkey);
+
+
+    if (1 != EVP_PKEY_decrypt_init(ctx)){
+        perror("EVP_PKEY_decrypt_init");
+        to_ret += 1;
+    }
+    if (1 != EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING)){
+        perror("EVP_PKEY_CTX_set_rsa_padding");
+        to_ret += 1;
+    }
+    if (1 != EVP_PKEY_decrypt(ctx, NULL, &outlength, inbuf, inlen)){
+        perror("EVP_PKEY_decrypt");
+        to_ret += 1;
+    }
+
+    if (1 != EVP_PKEY_decrypt(ctx, outbuf, &outl, inbuf, inlen))
+    {
+        perror("EVP_PKEY_decrypt");
+        to_ret += 1;
+    }
+
     EVP_PKEY_CTX_free(ctx);
 
-    output[outl] = '\0';
+    outbuf[outl] = '\0';
+
+    *outlen = outl;
     
-    return outl;
+    return to_ret;
 }
 
 int calcMaxEncryptSizeInBytes(const int keySizeInBits){
@@ -122,28 +166,32 @@ int main(){
     const char* publicFilename = "publicKey.txt";
     const char* privateFilename = "privateKey.txt";
 
-    // generateKeys(publicFilename, privateFilename, keysize);
+    generateKeys(publicFilename, privateFilename, keysize);
 
     char message[] = "This is my message to be encrypted!";
     int messageLen = strlen(message);
 
+    int size;
     char encryptedBuffer[maxBufferSize];
-
     char decryptedBuffer[maxBufferSize];
 
     printf("Message:\t %s\n", message);
 
-    int encryptedSize = encryptRSA(message, messageLen, encryptedBuffer, publicFilename);
+    int ret = encryptRSA(message, messageLen, encryptedBuffer, &size, publicFilename);
+    if (ret > 0)
+        perror("encryptRSA");
 
     printf("Encrypted:\t ");
-    for (int i = 0; i < encryptedSize; i++){
-        printf("%02x", encryptedBuffer[i]);
+    for (int i = 0; i < size; i++){
+        printf("%#x", encryptedBuffer[i]);
     }
     printf("\n");
 
-    int size = decryptRSA(encryptedBuffer, encryptedSize, decryptedBuffer, privateFilename);
 
-    
+    ret = decryptRSA(encryptedBuffer, size, decryptedBuffer, &size, privateFilename);
+    if (ret > 0)
+        perror("decryptRSA");
+
 
     printf("Decrypted:\t %s\n", decryptedBuffer);
     

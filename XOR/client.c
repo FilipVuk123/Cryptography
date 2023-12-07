@@ -22,7 +22,9 @@ char* XORCipher(char* data, char* key, int dataLen, int keyLen) {
 	for (int i = 0; i < dataLen; ++i) {
 		data[i] = data[i] ^ key[i % keyLen];
 	}
+    data[dataLen] = '\0';
 }
+
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -35,7 +37,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
     int socket_fd;
     char message[] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc lobortis at elit non convallis.";
-    char key[] = "sifra";
+    char key[] = "sifra123";
 
     int messageLen = strlen(message);
     int keyLen = strlen(key);
