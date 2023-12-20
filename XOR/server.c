@@ -72,11 +72,11 @@ int main() {
             }
         } else {
 
-            printf("Encrypted message: \n\n");
+            printf("Encrypted message: \n");
             for (int i = 0; i < bytes_received; i++){
-                printf("%#x ", buffer[i]);
+                printf("%02x ", buffer[i]);
             }
-            printf("\n\n");
+            printf("\n");
 
             // Decrypt the received message using XOR
             XORCipher(buffer, key, bytes_received, strlen(key));
@@ -85,11 +85,11 @@ int main() {
             printf("Decrypted message: %s\n", buffer);
             memset(buffer, 0, BUFFER_SIZE);
 
-            printf("\n\n\n");
+            printf("\n");
         }
     }
 
     close(socket_fd);
-    printf("Socket closed! Exiting... \n\n");
+    printf("Socket closed! Exiting... \n");
     return 0;
 }

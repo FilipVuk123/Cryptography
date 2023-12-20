@@ -28,14 +28,15 @@ int encrypt3DesCfb(char *inbuf, int inlen, char *key, char *iv, char *outbuf, in
         to_ret += 1;
     }
     ciphertext_total += outl;
-
+    printf("Total: %d\n", ciphertext_total);
     if (1 != EVP_EncryptFinal(ctx, outbuf + ciphertext_total, &outl))
     {
         printf("Error: EVP_EncryptFinal\n");
         to_ret += 1;
     }
+    EVP_CIPHER_CTX_free(ctx);
     ciphertext_total += outl;
-
+    printf("Total: %d\n", ciphertext_total);
     outbuf[ciphertext_total] = '\0';
 
     *outlen = ciphertext_total;
@@ -73,6 +74,9 @@ int decrypt3DesCfb(char *inbuf, int inlen, char *key, char *iv, char *outbuf, in
         printf("Error: EVP_DecryptFinal\n");
         to_ret += 1;
     }
+
+    EVP_CIPHER_CTX_free(ctx);
+
     decrypted_total += outl;
 
     outbuf[decrypted_total] = '\0';
@@ -111,10 +115,11 @@ int main(int argc, char *argv[])
         int i;
         for (i = 0; i < ciphertext_total; i++)
         {
-            printf("%#x ", ciphertext[i]);
+            printf("%02X ", ciphertext[i]);
         }
-        printf("\n\n");
+        printf("\n");
     }
+
 
     ret = decrypt3DesCfb(ciphertext, ciphertext_total, key, iv, decrypted, &decrypted_total);
     if (ret > 0)

@@ -22,11 +22,13 @@ int encryptAES256ctr(char *inbuf, int inlen, char *key, char *nonce, char *outbu
         to_ret =+ 1;
     }
     total += len;
+    printf("Total: %d\n", total);
     if (1 != EVP_EncryptFinal(ctx, outbuf + total, &len)){
         printf("Error: EVP_EncryptFinal\n");
         to_ret =+ 1;
     }
     total += len;
+    printf("Total: %d\n", total);
     EVP_CIPHER_CTX_free(ctx);
     
     outbuf[total] = '\0';
@@ -92,10 +94,10 @@ int main()
 
     for (int i = 0; i < size; i++)
     {
-        printf("%#x", encryptedData[i]);
+        printf("%02X ", encryptedData[i]);
     }
 
-    printf("\n\n");
+    printf("\n");
 
     ret = decryptAES256ctr(encryptedData, messageLen, ckey, nonce, decryptedData, &size);
     if (ret > 0) 

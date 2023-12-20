@@ -73,6 +73,6 @@ int main(int argc, char *argv[]) {
     }
 
     close(socket_fd);
-    printf("Socket closed! Exiting... \n\n");
+    printf("Socket closed! Exiting... \n");
     return 0;
 }

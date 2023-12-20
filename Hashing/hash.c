@@ -6,19 +6,19 @@
 
 
 void sha256(const unsigned char *message, size_t message_len, unsigned char *digest) {
-    if (SHA256(message, message_len, digest) == NULL) {
+    if (zSHA256(message, message_len, digest) == NULL) {
         printf("SHA256\n");
     }
 }
 
 void sha384(const unsigned char *message, size_t message_len, unsigned char *digest) {
-    if (SHA384(message, message_len, digest) == NULL) {
+    if (zSHA384(message, message_len, digest) == NULL) {
         printf("SHA384\n");
     }
 }
 
 void sha512(const unsigned char *message, size_t message_len, unsigned char *digest) {
-    if (SHA512(message, message_len, digest) == NULL) {
+    if (zSHA512(message, message_len, digest) == NULL) {
         printf("SHA512\n");
     }
 }
@@ -42,19 +42,19 @@ int main(void) {
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
         printf("%02x", sha256_digest[i]);
     }
-    printf("\n\n");
+    printf("\n");
 
     printf("SHA-384 Digest: \n");
     for (int i = 0; i < SHA384_DIGEST_LENGTH; i++) {
         printf("%02x", sha384_digest[i]);
     }
-    printf("\n\n");
+    printf("\n");
 
     printf("SHA-512 Digest: \n");
     for (int i = 0; i < SHA512_DIGEST_LENGTH; i++) {
         printf("%02x", sha512_digest[i]);
     }
-    printf("\n\n");
+    printf("\n");
 
     return 0;
 }

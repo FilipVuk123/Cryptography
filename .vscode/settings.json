@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "pem.h": "c",
-        "sha.h": "c"
+        "sha.h": "c",
+        "signal.h": "c"
     }
 }

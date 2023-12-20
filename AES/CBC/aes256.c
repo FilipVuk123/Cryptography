@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <openssl/evp.h>
 #include <openssl/aes.h>
+#include <openssl/err.h>
 
 int encryptAES256cbc(char *inbuf, int inlen, char *key, char *iv, char *outbuf, int *outlen)
 {
@@ -11,26 +12,30 @@ int encryptAES256cbc(char *inbuf, int inlen, char *key, char *iv, char *outbuf, 
     EVP_CIPHER_CTX *ctx;
     if(!(ctx = EVP_CIPHER_CTX_new())){
         printf("Error: EVP_CIPHER_CTX_new\n");
-        return 1;
+        
+        return 1;   
     }
     if (1 != EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv)){
         printf("Error: EVP_EncryptInit EVP_aes_256_cbc\n");
         to_ret += 1;
     }
+    
     if (1 != EVP_EncryptUpdate(ctx, outbuf, &len, inbuf, inlen)){
         printf("Error: EVP_EncryptUpdate\n");
         to_ret += 1;
     }
+    
 
     total += len;
-
+    printf("Total: %d\n", total);
     if (1 != EVP_EncryptFinal(ctx, outbuf + total, &len)){
         printf("Error: EVP_EncryptFinal\n");
         to_ret += 1;
     }
+    
 
     total += len;
-
+    printf("Total: %d\n", total);
     EVP_CIPHER_CTX_free(ctx);
     outbuf[total] = '\0';
 
@@ -95,10 +100,10 @@ int main()
 
     for (int i = 0; i < size; i++)
     {
-        printf("%#x", encryptedData[i]);
+        printf("%02X ", encryptedData[i]);
     }
 
-    printf("\n\n");
+    printf("\n");
 
     decryptAES256cbc(encryptedData, size, ckey, ivec, decryptedData, &size);
     if(ret > 0)

@@ -1,13 +1,13 @@
 
-CFLAGS   := -Iinclude -pipe -pedantic -g -Wall -Wextra -O3 -ffast-math
+CFLAGS   := -Iinclude -pipe -pedantic -g -Wall -Wextra -O3 -ffast-math -Wno-deprecated -Wno-deprecated-declarations
 LDFLAGS  := 
-LDLIBS   := -lm -lcrypto -lssl
+LDLIBS   := -lm -lssl -lcrypto
 
 SRC_DIR:=src
 BIN_DIR:=bin
 OBJ_DIR:=bin/obj
 
-EXE:=$(BIN_DIR)/libcrypto
+EXE:=$(BIN_DIR)/program
 SRC:=$(wildcard $(SRC_DIR)/*.c)
 OBJ:=$(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
@@ -24,9 +24,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
+
 .PHONY: clean
 clean:
 	rm  -r bin/*
+	
 .PHONY: start
 start:
 	./${EXE}
