@@ -1,6 +1,6 @@
 #include "symmetric.h"
 
-static void XORCipher(char *input, unsigned char *key, int dataLen, int keyLen, char* output)
+static void XORCipher(char *input, unsigned char *key, int dataLen, int keyLen, char *output)
 {
     for (int i = 0; i < dataLen; ++i)
     {
@@ -9,51 +9,51 @@ static void XORCipher(char *input, unsigned char *key, int dataLen, int keyLen, 
     output[dataLen] = '\0';
 }
 
-static EVP_CIPHER * getCipher(enum symmetric_type type){
-    EVP_CIPHER * cipher = NULL;
+static EVP_CIPHER *getCipher(enum symmetric_type type)
+{
+    EVP_CIPHER *cipher = NULL;
     switch (type)
     {
     case SYMMETRIC_AES256_CBC:
-        cipher = (EVP_CIPHER*) EVP_aes_256_cbc();
+        cipher = (EVP_CIPHER *)EVP_aes_256_cbc();
         break;
     case SYMMETRIC_AES256_CTR:
-        cipher = (EVP_CIPHER*) EVP_aes_256_ctr();
+        cipher = (EVP_CIPHER *)EVP_aes_256_ctr();
         break;
-    case SYMMETRIC_AES256_GCM:
-        cipher = (EVP_CIPHER*) EVP_aes_256_gcm();
+    case SYMMETRIC_AES256_OFB:
+        cipher = (EVP_CIPHER *)EVP_aes_256_ofb();
         break;
     case SYMMETRIC_AES128_CBC:
-        cipher = (EVP_CIPHER*) EVP_aes_128_cbc();
+        cipher = (EVP_CIPHER *)EVP_aes_128_cbc();
         break;
     case SYMMETRIC_AES128_CTR:
-        cipher = (EVP_CIPHER*) EVP_aes_128_ctr();
+        cipher = (EVP_CIPHER *)EVP_aes_128_ctr();
         break;
-    case SYMMETRIC_AES128_GCM:
-        cipher = (EVP_CIPHER*) EVP_aes_128_gcm();
+    case SYMMETRIC_AES128_OFB:
+        cipher = (EVP_CIPHER *)EVP_aes_128_ofb();
         break;
     case SYMMETRIC_AES192_CBC:
-        cipher = (EVP_CIPHER*) EVP_aes_192_cbc();
+        cipher = (EVP_CIPHER *)EVP_aes_192_cbc();
         break;
     case SYMMETRIC_AES192_CTR:
-        cipher = (EVP_CIPHER*) EVP_aes_192_ctr();
+        cipher = (EVP_CIPHER *)EVP_aes_192_ctr();
         break;
-    case SYMMETRIC_AES192_GCM:
-        cipher = (EVP_CIPHER*) EVP_aes_192_gcm();
+    case SYMMETRIC_AES192_OFB:
+        cipher = (EVP_CIPHER *)EVP_aes_192_ofb();
         break;
     case SYMMETRIC_3DES_CBC:
-        cipher = (EVP_CIPHER*) EVP_des_ede3_cbc();
+        cipher = (EVP_CIPHER *)EVP_des_ede3_cbc();
         break;
     case SYMMETRIC_3DES_CFB:
-        cipher = (EVP_CIPHER*) EVP_des_ede3_cfb();
+        cipher = (EVP_CIPHER *)EVP_des_ede3_cfb();
         break;
 
     default:
-        cipher = (EVP_CIPHER*) EVP_aes_256_cbc();
+        cipher = (EVP_CIPHER *)EVP_aes_256_cbc();
         break;
     }
     return cipher;
 }
-
 
 int symmetric_encrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned char *key, size_t key_len, unsigned char *iv)
 {
@@ -61,10 +61,10 @@ int symmetric_encrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned c
     ctx->type = type;
     ctx->iv = iv;
     ctx->evp = NULL;
-    ctx->tag = NULL;
     ctx->output_buffer = NULL;
     ctx->output_size = 0;
     ctx->key_len = key_len;
+    ctx->allocated_size = 0;
 
     if (type == SYMMETRIC_XOR)
     {
@@ -72,7 +72,7 @@ int symmetric_encrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned c
     }
 
     ctx->cipher = getCipher(type);
-    
+
     if (!(ctx->evp = EVP_CIPHER_CTX_new()))
     {
         printf("Error: EVP_CIPHER_CTX_new in symmetric_encrypt_new\n");
@@ -84,7 +84,7 @@ int symmetric_encrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned c
         printf("Error: EVP_EncryptInit in symmetric_encrypt_new\n");
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -117,17 +117,20 @@ int symmetric_encrypt_update(symmetric_t *ctx, unsigned char *new_key, size_t ne
     return 0;
 }
 
-int symmetric_encrypt(symmetric_t *ctx, char *input, const int in_size, unsigned char *aad, size_t aad_size)
+int symmetric_encrypt(symmetric_t *ctx, char *input, const int in_size)
 {
     if (ctx->type == SYMMETRIC_XOR)
     {
-        ctx->output_buffer = realloc(ctx->output_buffer, in_size);
-        XORCipher(input, ctx->key, in_size, ctx->key_len, (char *) ctx->output_buffer);
+        if (in_size > ctx->allocated_size)
+        {
+            ctx->output_buffer = realloc(ctx->output_buffer, in_size);
+            ctx->allocated_size = in_size;
+        }
+        XORCipher(input, ctx->key, in_size, ctx->key_len, (char *)ctx->output_buffer);
         ctx->output_size = in_size;
 
         return 0;
     }
-    ctx->aad = aad;
     size_t cipher_block_size = 0;
     switch (ctx->type)
     {
@@ -144,24 +147,17 @@ int symmetric_encrypt(symmetric_t *ctx, char *input, const int in_size, unsigned
     default:
         break;
     }
-
-    if (ctx->type == SYMMETRIC_AES128_GCM || ctx->type == SYMMETRIC_AES192_GCM || ctx->type == SYMMETRIC_AES256_GCM)
+    if (in_size + cipher_block_size > ctx->allocated_size)
     {
-        int len;
-        if (1 != EVP_EncryptUpdate(ctx->evp, NULL, &len, (const unsigned char*)ctx->aad, aad_size))
-        {
-            printf("Error: EVP_EncryptUpdate aad in symmetric_encrypt_new\n");
-            return 1;
-        }
+        ctx->output_buffer = realloc(ctx->output_buffer, in_size + cipher_block_size);
+        ctx->allocated_size = in_size + cipher_block_size;
     }
-
-    ctx->output_buffer = realloc(ctx->output_buffer, in_size + cipher_block_size);
     memset(ctx->output_buffer, 0, in_size + cipher_block_size);
 
     int total = 0;
     int len;
     int to_ret = 0;
-    if (1 != EVP_EncryptUpdate(ctx->evp, ctx->output_buffer, &len, (const unsigned char*)input, in_size))
+    if (1 != EVP_EncryptUpdate(ctx->evp, ctx->output_buffer, &len, (const unsigned char *)input, in_size))
     {
         printf("Error: EVP_EncryptUpdate\n");
         to_ret += 1;
@@ -177,46 +173,20 @@ int symmetric_encrypt(symmetric_t *ctx, char *input, const int in_size, unsigned
 
     ctx->output_buffer[total] = '\0';
     ctx->output_size = total;
-    if (ctx->type == SYMMETRIC_AES128_GCM || ctx->type == SYMMETRIC_AES192_GCM || ctx->type == SYMMETRIC_AES256_GCM)
-    {
-        
-        ctx->tag = realloc(ctx->tag, 16);
-        if (1 != EVP_CIPHER_CTX_ctrl(ctx->evp, EVP_CTRL_GCM_GET_TAG, 16, ctx->tag))
-        {
-            printf("Error: EVP_CIPHER_CTX_ctrl\n");
-            to_ret += 1;
-        }
-    }
 
     return to_ret;
 }
 
-void symmetric_encrypt_free(symmetric_t *ctx)
+int symmetric_decrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned char *key, size_t key_len, unsigned char *iv)
 {
-    if (ctx->output_buffer != NULL)
-    {
-        free(ctx->output_buffer);
-    }
-    if (ctx->tag != NULL)
-    {
-        free(ctx->tag);
-    }
-    if (ctx->evp != NULL)
-    {
-        EVP_CIPHER_CTX_free(ctx->evp);
-    }
-}
-
-
-int symmetric_decrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned char *key, size_t key_len, unsigned char *iv){
     ctx->key = key;
     ctx->type = type;
     ctx->iv = iv;
     ctx->evp = NULL;
-    ctx->tag = NULL;
     ctx->output_buffer = NULL;
     ctx->output_size = 0;
     ctx->key_len = key_len;
+    ctx->allocated_size = 0;
 
     if (type == SYMMETRIC_XOR)
     {
@@ -240,7 +210,8 @@ int symmetric_decrypt_new(symmetric_t *ctx, enum symmetric_type type, unsigned c
     return 0;
 }
 
-int symmetric_decrypt_update(symmetric_t *ctx, unsigned char *new_key, size_t new_key_len, unsigned char *new_iv){
+int symmetric_decrypt_update(symmetric_t *ctx, unsigned char *new_key, size_t new_key_len, unsigned char *new_iv)
+{
     if (new_key != NULL)
     {
         ctx->key = new_key;
@@ -268,52 +239,34 @@ int symmetric_decrypt_update(symmetric_t *ctx, unsigned char *new_key, size_t ne
     return 0;
 }
 
-int symmetric_decrypt(symmetric_t* ctx, char* input, const int in_size, unsigned char *aad, size_t aad_size, unsigned char *tag){
+int symmetric_decrypt(symmetric_t *ctx, char *input, const int in_size)
+{
     if (ctx->type == SYMMETRIC_XOR)
     {
+        if (in_size > ctx->allocated_size)
+        {
+            ctx->output_buffer = realloc(ctx->output_buffer, in_size);
+            ctx->allocated_size = in_size;
+        }
+        XORCipher(input, ctx->key, in_size, ctx->key_len, (char *)ctx->output_buffer);
         ctx->output_size = in_size;
-        ctx->output_buffer = realloc(ctx->output_buffer, ctx->output_size);
-        XORCipher(input, ctx->key, in_size, ctx->key_len, (char *) ctx->output_buffer);
 
         return 0;
     }
-
-    ctx->tag = tag;
-    ctx->aad = aad;
-    
-
-    if (ctx->type == SYMMETRIC_AES128_GCM || ctx->type == SYMMETRIC_AES192_GCM || ctx->type == SYMMETRIC_AES256_GCM)
-    {
-        int len;
-        if (1 != EVP_DecryptUpdate(ctx->evp, NULL, &len, (const unsigned char*)ctx->aad, aad_size))
-        {
-            printf("Error: EVP_EncryptUpdate aad in symmetric_decrypt_new\n");
-            return 1;
-        }
+    if (in_size > ctx->allocated_size){
+        ctx->output_buffer = realloc(ctx->output_buffer, in_size);
+        ctx->allocated_size = in_size;
     }
-
-    ctx->output_buffer = realloc(ctx->output_buffer, in_size);
     memset(ctx->output_buffer, 0, in_size);
     int total = 0;
     int len;
     int to_ret = 0;
-    if (1 != EVP_DecryptUpdate(ctx->evp, ctx->output_buffer, &len, (const unsigned char*)input, in_size))
+    if (1 != EVP_DecryptUpdate(ctx->evp, ctx->output_buffer, &len, (const unsigned char *)input, in_size))
     {
         printf("Error: EVP_EncryptUpdate\n");
         to_ret += 1;
     }
     total += len;
-
-    if (ctx->type == SYMMETRIC_AES128_GCM || ctx->type == SYMMETRIC_AES192_GCM || ctx->type == SYMMETRIC_AES256_GCM)
-    {
-        
-        if (1 != EVP_CIPHER_CTX_ctrl(ctx->evp, EVP_CTRL_GCM_SET_TAG, 16, tag))
-        {
-            printf("Error: EVP_CIPHER_CTX_ctrl\n");
-            to_ret += 1;
-        }
-    }
-
 
     if (1 != EVP_DecryptFinal(ctx->evp, ctx->output_buffer + total, &len))
     {
@@ -327,8 +280,9 @@ int symmetric_decrypt(symmetric_t* ctx, char* input, const int in_size, unsigned
     return to_ret;
 }
 
-void symmetric_decrypt_free(symmetric_t* ctx){
-     if (ctx->output_buffer != NULL)
+void symmetric_free(symmetric_t *ctx)
+{
+    if (ctx->output_buffer != NULL)
     {
         free(ctx->output_buffer);
     }
@@ -336,13 +290,4 @@ void symmetric_decrypt_free(symmetric_t* ctx){
     {
         EVP_CIPHER_CTX_free(ctx->evp);
     }
-}
-
-
-void printEncryptedHex(unsigned char* buffer, size_t size){
-    for (size_t i = 0; i < size; i++)
-    {
-        printf("%02X ", buffer[i]);
-    }
-    printf("\n");
 }

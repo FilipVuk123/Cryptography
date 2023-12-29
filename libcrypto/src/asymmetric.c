@@ -138,25 +138,11 @@ int asymmetric_encrypt(asymmetric_t* ctx, char* input, const int in_size){
         printf("Error in RSA_public_encrypt\n");
         return 1;
     }
-    printf("%d\n", outl);
     ctx->output_buffer[outl] = '\0';
     ctx->output_size = outl;
 
     return 0;
 }
-
-void asymmetric_encrypt_free(asymmetric_t* ctx){
-    if(ctx->output_buffer != NULL){
-        free(ctx->output_buffer);
-    }
-    if(ctx->public_key != NULL){
-        RSA_free (ctx->public_key);
-    }
-    if(ctx->private_key != NULL){
-        RSA_free(ctx->private_key);
-    }
-}
-
 
 
 int asymmetric_decrypt_new(asymmetric_t* ctx, const char* path_to_private_key, size_t key_size){
@@ -190,7 +176,7 @@ int asymmetric_decrypt(asymmetric_t* ctx, char* input, const int in_size){
     return 0;
 }
 
-void asymmetric_decrypt_free(asymmetric_t* ctx){
+void asymmetric_free(asymmetric_t* ctx){
     if(ctx->output_buffer != NULL){
         free(ctx->output_buffer);
     }

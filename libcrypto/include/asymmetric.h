@@ -14,7 +14,7 @@ typedef struct asymmetric_t
 {
     RSA* public_key, *private_key;
     char* output_buffer, * path_to_public_key, * path_to_private_key;
-    size_t output_size, key_size;
+    int output_size, key_size;
 } asymmetric_t;
 
 
@@ -26,11 +26,12 @@ RSA* get_private_key_from_file(const char *path);
 
 int asymmetric_encrypt_new(asymmetric_t* ctx, const char* path_to_public_key, size_t key_size);
 int asymmetric_encrypt(asymmetric_t* ctx, char* input, const int in_size);
-void asymmetric_encrypt_free(asymmetric_t* ctx);
 
 
 int asymmetric_decrypt_new(asymmetric_t* ctx, const char* path_to_private_key, size_t key_size);
 int asymmetric_decrypt(asymmetric_t* ctx, char* input, const int in_size);
-void asymmetric_decrypt_free(asymmetric_t* ctx);
+
+
+void asymmetric_free(asymmetric_t* ctx);
 
 #endif
