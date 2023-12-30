@@ -127,7 +127,6 @@ int asymmetric_new(asymmetric_t *ctx, enum asymmetric_action action, const char 
             return 1;
         }
         ctx->key_size = RSA_size(ctx->public_key);
-        printf("%d\n", ctx->key_size);
     }
     else if (ctx->action == ASYMMETRIC_DECRYPT)
     {
@@ -139,7 +138,6 @@ int asymmetric_new(asymmetric_t *ctx, enum asymmetric_action action, const char 
             return 1;
         }
         ctx->key_size = RSA_size(ctx->private_key);
-        printf("%d\n", ctx->key_size);
     }
     else
     {
