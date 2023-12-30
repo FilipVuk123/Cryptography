@@ -55,6 +55,7 @@ static EVP_CIPHER *getCipher(enum symmetric_type type)
     return cipher;
 }
 
+
 int symmetric_new(symmetric_t *ctx, enum symmetric_action action, enum symmetric_type type, unsigned char *key, size_t key_len, unsigned char *iv)
 {
     ctx->key = key;
@@ -200,6 +201,27 @@ int symmetric_encrypt_decrypt(symmetric_t *ctx, unsigned char *input, const int 
   
 
     return to_ret;
+}
+
+
+int symmetric_get_max_buffer_size(symmetric_t *ctx, const int in_size){
+    int cipher_block_size = 0;
+    switch (ctx->type)
+    {
+    case SYMMETRIC_3DES_CBC:
+        cipher_block_size = 8;
+        break;
+
+    case SYMMETRIC_AES128_CBC:
+    case SYMMETRIC_AES256_CBC:
+    case SYMMETRIC_AES192_CBC:
+        cipher_block_size = 16;
+        break;
+    
+    default:
+        break;
+    }
+    return in_size + cipher_block_size;
 }
 
 void symmetric_free(symmetric_t *ctx)
