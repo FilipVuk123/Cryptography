@@ -41,8 +41,8 @@ int main(){
     symmetric_t encrypt, decrypt;
     asymmetric_t aencrypt, adecrypt;
     
-    symmetric_new(&encrypt, SYMMETRIC_ENCRYPT, SYMMETRIC_AES256_CTR, key, 32, iv);
-    symmetric_new(&decrypt, SYMMETRIC_DECRYPT, SYMMETRIC_AES256_CTR, key, 32, iv);
+    symmetric_new(&encrypt, SYMMETRIC_ENCRYPT, SYMMETRIC_3DES_CFB, key, 32, iv);
+    symmetric_new(&decrypt, SYMMETRIC_DECRYPT, SYMMETRIC_3DES_CFB, key, 32, iv);
 
     symmetric_encrypt_decrypt(&encrypt, message, strlen(message), encrypted, &encrypted_len);
 

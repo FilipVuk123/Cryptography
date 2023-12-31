@@ -17,37 +17,60 @@ static EVP_CIPHER *getCipher(enum symmetric_type type)
     case SYMMETRIC_AES256_CBC:
         cipher = (EVP_CIPHER *)EVP_aes_256_cbc();
         break;
-    case SYMMETRIC_AES256_CTR:
-        cipher = (EVP_CIPHER *)EVP_aes_256_ctr();
-        break;
-    case SYMMETRIC_AES256_OFB:
-        cipher = (EVP_CIPHER *)EVP_aes_256_ofb();
-        break;
     case SYMMETRIC_AES128_CBC:
         cipher = (EVP_CIPHER *)EVP_aes_128_cbc();
-        break;
-    case SYMMETRIC_AES128_CTR:
-        cipher = (EVP_CIPHER *)EVP_aes_128_ctr();
-        break;
-    case SYMMETRIC_AES128_OFB:
-        cipher = (EVP_CIPHER *)EVP_aes_128_ofb();
         break;
     case SYMMETRIC_AES192_CBC:
         cipher = (EVP_CIPHER *)EVP_aes_192_cbc();
         break;
+    case SYMMETRIC_AES256_CTR:
+        cipher = (EVP_CIPHER *)EVP_aes_256_ctr();
+        break;
+    case SYMMETRIC_AES128_CTR:
+        cipher = (EVP_CIPHER *)EVP_aes_128_ctr();
+        break;
     case SYMMETRIC_AES192_CTR:
         cipher = (EVP_CIPHER *)EVP_aes_192_ctr();
+        break;
+    case SYMMETRIC_AES256_OFB:
+        cipher = (EVP_CIPHER *)EVP_aes_256_ofb();
+        break;
+    case SYMMETRIC_AES128_OFB:
+        cipher = (EVP_CIPHER *)EVP_aes_128_ofb();
         break;
     case SYMMETRIC_AES192_OFB:
         cipher = (EVP_CIPHER *)EVP_aes_192_ofb();
         break;
+    case SYMMETRIC_AES256_CFB:
+        cipher = (EVP_CIPHER *)EVP_aes_256_cfb();
+        break;
+    case SYMMETRIC_AES128_CFB:
+        cipher = (EVP_CIPHER *)EVP_aes_128_cfb();
+        break;
+    case SYMMETRIC_AES192_CFB:
+        cipher = (EVP_CIPHER *)EVP_aes_192_cfb();
+        break;
+    case SYMMETRIC_AES256_ECB:
+        cipher = (EVP_CIPHER *)EVP_aes_256_ecb();
+        break;
+    case SYMMETRIC_AES128_ECB:
+        cipher = (EVP_CIPHER *)EVP_aes_128_ecb();
+        break;
+    case SYMMETRIC_AES192_ECB:
+        cipher = (EVP_CIPHER *)EVP_aes_192_ecb();
+        break;
     case SYMMETRIC_3DES_CBC:
         cipher = (EVP_CIPHER *)EVP_des_ede3_cbc();
+        break;
+    case SYMMETRIC_3DES_OFB:
+        cipher = (EVP_CIPHER *)EVP_des_ede3_ofb();
+        break;
+    case SYMMETRIC_3DES_ECB:
+        cipher = (EVP_CIPHER *)EVP_des_ede3_ecb();
         break;
     case SYMMETRIC_3DES_CFB:
         cipher = (EVP_CIPHER *)EVP_des_ede3_cfb();
         break;
-
     default:
         cipher = (EVP_CIPHER *)EVP_aes_256_cbc();
         break;
