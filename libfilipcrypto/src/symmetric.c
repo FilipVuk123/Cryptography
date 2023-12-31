@@ -232,12 +232,16 @@ int symmetric_get_max_buffer_size(symmetric_t *ctx, const int in_size){
     switch (ctx->type)
     {
     case SYMMETRIC_3DES_CBC:
+    case SYMMETRIC_3DES_ECB:
         cipher_block_size = 8;
         break;
 
     case SYMMETRIC_AES128_CBC:
     case SYMMETRIC_AES256_CBC:
     case SYMMETRIC_AES192_CBC:
+    case SYMMETRIC_AES128_ECB:
+    case SYMMETRIC_AES256_ECB:
+    case SYMMETRIC_AES192_ECB:
         cipher_block_size = 16;
         break;
     
