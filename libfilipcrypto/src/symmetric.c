@@ -97,7 +97,7 @@ int symmetric_new(symmetric_t *ctx, enum symmetric_action action, enum symmetric
 
     if (!(ctx->evp = EVP_CIPHER_CTX_new()))
     {
-        printf("Error: EVP_CIPHER_CTX_new in symmetric_encrypt_new\n");
+        printf("Error: EVP_CIPHER_CTX_new in symmetric_new\n");
         return 1;
     }
     if (ctx->action == SYMMETRIC_ENCRYPT)
@@ -105,7 +105,7 @@ int symmetric_new(symmetric_t *ctx, enum symmetric_action action, enum symmetric
 
         if (1 != EVP_EncryptInit(ctx->evp, ctx->cipher, key, iv))
         {
-            printf("Error: EVP_EncryptInit in symmetric_encrypt_new\n");
+            printf("Error: EVP_EncryptInit in symmetric_new\n");
             return 1;
         }
     }
@@ -113,7 +113,7 @@ int symmetric_new(symmetric_t *ctx, enum symmetric_action action, enum symmetric
     {
         if (1 != EVP_DecryptInit(ctx->evp, ctx->cipher, key, iv))
         {
-            printf("Error: EVP_EncryptInit in symmetric_encrypt_new\n");
+            printf("Error: EVP_DecryptInit in symmetric_new\n");
             return 1;
         }
     }
@@ -150,7 +150,7 @@ int symmetric_update_keys(symmetric_t *ctx, unsigned char *new_key, size_t new_k
 
         if (1 != EVP_EncryptInit(ctx->evp, ctx->cipher, ctx->key, ctx->iv))
         {
-            printf("Error: EVP_EncryptInit EVP_aes_256_cbc\n");
+            printf("Error: EVP_EncryptInit symmetric_update_keys\n");
             return 1;
         }
     }
@@ -158,7 +158,7 @@ int symmetric_update_keys(symmetric_t *ctx, unsigned char *new_key, size_t new_k
     {
         if (1 != EVP_DecryptInit(ctx->evp, ctx->cipher, ctx->key, ctx->iv))
         {
-            printf("Error: EVP_EncryptInit EVP_aes_256_cbc\n");
+            printf("Error: EVP_DecryptInit symmetric_update_keys\n");
             return 1;
         }
     }
@@ -207,14 +207,14 @@ int symmetric_encrypt_decrypt(symmetric_t *ctx, unsigned char *input, const int 
     {
         if (1 != EVP_DecryptUpdate(ctx->evp, output, &len, (const unsigned char *)input, in_size))
         {
-            printf("Error: EVP_EncryptUpdate\n");
+            printf("Error: EVP_DecryptUpdate\n");
             to_ret += 1;
         }
         total += len;
 
         if (1 != EVP_DecryptFinal(ctx->evp, output + total, &len))
         {
-            printf("Error: EVP_EncryptFinal\n");
+            printf("Error: EVP_DecryptFinal\n");
             to_ret += 1;
         }
         total += len;
