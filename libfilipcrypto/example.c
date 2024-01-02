@@ -49,11 +49,11 @@ int main(){
     
     symmetric_encrypt_decrypt(&encrypt, message, strlen(message), encrypted, &encrypted_len);
 
-    print_encrypted_hex(encrypted, encrypted_len);
+    print_encrypted_hex_interval(encrypted, encrypted_len);
 
     // symmetric_encrypt_decrypt(&encrypt, message, strlen(message), encrypted, &encrypted_len);
 
-    // print_encrypted_hex(encrypted, encrypted_len);
+    // print_encrypted_hex_interval(encrypted, encrypted_len);
 
     symmetric_encrypt_decrypt(&decrypt, encrypted, encrypted_len, decrypted, &decrypted_len);
 
@@ -75,7 +75,7 @@ int main(){
 
     // asymmetric_encrypt_decrypt(&aencrypt, message, strlen(message), aencrypted, &aencrypted_len);    
 
-    // print_encrypted_hex(aencrypted, aencrypted_len);
+    // print_encrypted_hex_interval(aencrypted, aencrypted_len);
 
 
     // asymmetric_encrypt_decrypt(&adecrypt, aencrypted, aencrypted_len, adecrypted, &adecrypted_len);
